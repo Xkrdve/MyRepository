@@ -1,0 +1,56 @@
+// Paul Juran
+
+#include <stdlib.h>
+#include <stdio.h>
+
+#define ARRAY_LENGTH(x) ((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
+
+
+int* repeat(int t1[], int t2[], int length);
+void printTab(int tab[], int length);
+
+
+int main() {
+
+	int t1[] = {1,2,4};
+	int t2[] = {10,3,8};
+
+	printTab(t1, ARRAY_LENGTH(t1));
+	printTab(t2, ARRAY_LENGTH(t2));
+
+	int* res = repeat(t1,t2,ARRAY_LENGTH(t1));
+
+	printTab(res, 7);
+	free(res);
+
+}
+
+
+int* repeat(int t1[], int t2[], int length) {
+	int tailleTot = 0;
+
+	for(int i = 0; i<length; i++) {
+		tailleTot += t1[i]*t2[i];
+	}
+
+	int* res = malloc(tailleTot);
+	int current = 0;
+
+	for(int i = 0; i<length; i++) {
+		for(int k = 0; k < t1[i]; k++) {
+			*(res + current) = t2[i];
+			current++;
+		}
+	}
+
+	return res;
+}
+
+
+void printTab(int tab[], int length) {
+	printf("{ ");
+	for (int i = 0; i < length; i++) {
+		printf("%d ", tab[i]);
+	}
+	printf("}\n");
+}
