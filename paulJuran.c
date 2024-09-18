@@ -16,7 +16,7 @@ int main() {
 	int t1[] = {1,2,4};
 	int t2[] = {10,3,8};
 
-	int length = ARRAY_LENGTH(t1);
+	int length = 3;
 
 	printTab(t1, length);
 	printTab(t2, length);
@@ -33,22 +33,24 @@ int main() {
 int* repeat(int t1[], int t2[], int length) {
 	int tailleTot = 0;
 
-	for(int i = 0; i<length; i++) {
-		tailleTot += t1[i]*t2[i];
-	}
+	// compute size of res
+	tailleTot = sumTab( t1, length);
 
-	int* res = malloc(tailleTot);
+	// allocate
+	int* res = malloc(tailleTot * sizeof(int));
 	int current = 0;
 
+	// copy and duplicate values
 	for(int i = 0; i<length; i++) {
 		for(int k = 0; k < t1[i]; k++) {
-			*(res + current) = t2[i];
+			res[current] = t2[i];
 			current++;
 		}
 	}
 
 	return res;
 }
+
 
 
 void printTab(int tab[], int length) {
