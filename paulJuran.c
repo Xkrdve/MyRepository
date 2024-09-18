@@ -8,6 +8,7 @@
 
 int* repeat(int t1[], int t2[], int length);
 void printTab(int tab[], int length);
+int sumTab(int tab[], int length);
 
 
 int main() {
@@ -15,15 +16,18 @@ int main() {
 	int t1[] = {1,2,4};
 	int t2[] = {10,3,8};
 
-	printTab(t1, ARRAY_LENGTH(t1));
-	printTab(t2, ARRAY_LENGTH(t2));
+	int length = ARRAY_LENGTH(t1);
 
-	int* res = repeat(t1,t2,ARRAY_LENGTH(t1));
+	printTab(t1, length);
+	printTab(t2, length);
 
-	printTab(res, 7);
+	int* res = repeat(t1,t2,length);
+
+	printTab(res, sumTab(t1,length));
 	free(res);
 
 }
+
 
 
 int* repeat(int t1[], int t2[], int length) {
@@ -53,4 +57,12 @@ void printTab(int tab[], int length) {
 		printf("%d ", tab[i]);
 	}
 	printf("}\n");
+}
+
+int sumTab(int tab[], int length) {
+	int res = 0;
+	for(int i = 0; i < length; i++) {
+		res += tab[i];
+	}
+	return res;
 }

@@ -143,6 +143,7 @@ int main(void) {
     */
 
     Date* date = newDate();
+    Date date1 = creerDateParCopie();
 
     //initialiseDate(&date);
     afficheDate(date);
