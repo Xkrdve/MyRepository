@@ -1,0 +1,230 @@
+/**
+ Compilation
+ gcc --std=c99 -W -Wall -o prixTuring prixTuring.c
+
+ Exécution
+ ./prixTuring
+
+ Tests
+ diff out.csv turingWinners.csv
+
+**/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+#include <assert.h>
+#include <stdbool.h>
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// MAIN
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+typedef struct
+{
+	int annee;
+	char* nom; // \0
+	char* nature; // \0
+} dataPrixTuring;
+
+
+
+bool checkFile(FILE* file);
+int convertToIntFromCharTab(char* tab);
+int numberOfWinners(FILE* file);
+void readWinners(FILE* file, dataPrixTuring* data);
+void printData(dataPrixTuring data[], int size);
+void getAnnee(char* line);
+char* getNom(char* line);
+char* getNature(char* line);
+int tailleStr(char* str);
+void freeData(dataPrixTuring* data, int size);
+void writeWinners(FILE* file, dataPrixTuring* data, int size);
+
+
+/**
+ * 
+ * 
+ * */
+
+int main(/*int argc, char** argv*/)
+{
+	char filename[] = "turingWinners.csv";
+	char outputFilename[] = "out.csv";
+
+	// Lire le 1er csv
+	FILE* file;
+	file = fopen(filename, "r");
+
+	// verification que le fichier existe et autres erreurs
+	if (!checkFile(file)) 
+		return EXIT_FAILURE;
+
+	// lecture ligne par ligne pour trouver le nombre de lignes du fichier
+	int nombreDeLignes = numberOfWinners(file);
+
+	// stockage des données en mémoire vive
+	dataPrixTuring data[nombreDeLignes];
+	readWinners(file, data);
+
+
+	// on affiche dans la console
+	// printData(data, nombreDeLignes);
+
+    fclose(file);
+
+
+    file = fopen(outputFilename, "w");
+	if (!checkFile(file)) 
+		return EXIT_FAILURE;
+
+	writeWinners(file, data, nombreDeLignes);
+
+	fclose(file);
+
+
+    freeData(data, nombreDeLignes);
+
+	return EXIT_SUCCESS;
+}
+
+bool checkFile(FILE* file) {
+	if (file == NULL) {
+		printf("code erreur %d\n", errno);
+
+		if (errno == ENOENT) 
+			printf("Le fichier n'existe pas\n");
+		else
+			printf("Erreur inconnue\n");
+
+		return false;
+	}
+	return true;
+}
+
+int convertToIntFromCharTab(char* tab) {
+	char c = tab[0];
+	int res = 0;
+	for(int i = 0; c != '\0'; i++) {
+		res *= 10;
+		res += c - '0';
+		c = tab[i+1];
+	}
+	return res;
+}
+
+int numberOfWinners(FILE* file) {
+	char line[1024];
+	int tailleFichier = 0;
+	while(fgets(line, 1024, file)) {
+		tailleFichier++;
+		//printf("%s\n", line);
+	}
+	return tailleFichier;
+}
+
+void readWinners(FILE* file, dataPrixTuring* data) {
+	rewind(file);
+	int currentDataPrixTuring = 0;
+	char line[1024];
+
+	while(fgets(line, 1024, file)) {
+		char* nature = getNature(line);
+		char* nom = getNom(line);
+		getAnnee(line);
+		char* anneeStr = line;
+		int annee = convertToIntFromCharTab(anneeStr);
+
+		//printf("%s\n", nom);
+		//printf("%s\n", nature);
+		//printf("%d\n\n", annee);
+
+		data[currentDataPrixTuring].annee = annee;
+		data[currentDataPrixTuring].nom = malloc(sizeof(char) * (tailleStr(nom)+1));
+		strcpy(data[currentDataPrixTuring].nom, nom);
+		data[currentDataPrixTuring].nature = malloc(sizeof(char) * (tailleStr(nature)+1));
+		strcpy(data[currentDataPrixTuring].nature, nature);
+
+		currentDataPrixTuring++;
+	}
+
+}
+
+void getAnnee(char* line) {
+	char c = line[0];
+	int k = 0;
+	while(c != ';') {
+		if(c == '\0') return;
+		k++;
+		c = line[k];
+	}
+	line[k] = '\0';
+}
+
+int tailleStr(char* str) {
+	int taille = 0;
+	char c = str[taille];
+	while(c != '\0') {
+		c = str[++taille];
+	}
+	return taille;
+}
+
+void freeData(dataPrixTuring* data, int size) {
+	for(int i = 0; i<size; i++) {
+		dataPrixTuring d = data[i];
+		free(d.nom);
+		free(d.nature);
+	}
+}
+
+void writeWinners(FILE* file, dataPrixTuring* data, int size) {
+	for(int i = 0; i < size; i++) {
+		char str[1024];
+		sprintf(str, "%d;%s;%s\n", data[i].annee, data[i].nom, data[i].nature);
+		fputs(str, file);
+	}
+}
+
+char* getNom(char* line) {
+	char c = line[0];
+	int k = 0;
+	int n = 0;
+	char* t = line;
+	while(c != ';' || n == 0) {
+		if(c == '\0') return NULL;
+		if(c == ';') {
+			n++;
+			t = line+k+1;
+		}
+		k++;
+		c = line[k];
+	}
+	line[k] = '\0';
+	return t;
+}
+
+char* getNature(char* line) {
+	char c = line[0];
+	int k = 0;
+	char* t = line;
+	while(c != '\n') {
+		if(c == '\0') return NULL;
+		k++;
+		if(c == ';') 
+			t = line+k;
+		c = line[k];
+	}
+	line[k] = '\0';
+	return t;
+}
+
+void printData(dataPrixTuring data[], int size) {
+	for(int i = 0; i < size; i++) {
+		dataPrixTuring d = data[i];
+		printf("année: %d\n", d.annee);
+		printf("nom: %s\n", d.nom);
+		printf("nature: %s\n\n", d.nature);
+	}
+}
