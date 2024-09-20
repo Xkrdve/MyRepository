@@ -89,6 +89,7 @@ int main(/*int argc, char** argv*/)
 	return EXIT_SUCCESS;
 }
 
+// verifie si le fichier existe
 bool checkFile(FILE* file) {
 	if (file == NULL) {
 		printf("code erreur %d\n", errno);
@@ -103,6 +104,7 @@ bool checkFile(FILE* file) {
 	return true;
 }
 
+// caste un char* en int
 int convertToIntFromCharTab(char* tab) {
 	char c = tab[0];
 	int res = 0;
@@ -114,7 +116,9 @@ int convertToIntFromCharTab(char* tab) {
 	return res;
 }
 
+// renvoie le nombre de lignes du fichier csv
 int numberOfWinners(FILE* file) {
+	rewind(file);
 	char line[1024];
 	int tailleFichier = 0;
 	while(fgets(line, 1024, file)) {
@@ -124,21 +128,30 @@ int numberOfWinners(FILE* file) {
 	return tailleFichier;
 }
 
+// copie les informations du fichier csv en mémoire pour utilisation
 void readWinners(FILE* file, dataPrixTuring* data) {
 	rewind(file);
 	int currentDataPrixTuring = 0;
 	char line[1024];
 
 	while(fgets(line, 1024, file)) {
+
+		// on récupère les infos de la ligne
+		/**
+		 * Le principe est de parcourir la ligne et de remplacer chaque ';' et '\n' par un '\0' pour transformer
+		 * un char* et trois char*
+		 * ensuite, on copie ces char* dans un espace mémoire correctement alloué avant la sortie du range
+		 * */
+
+		//getNature et getNom renvoient les addresses du début de l'information respective dans le char* line initial.
 		char* nature = getNature(line);
 		char* nom = getNom(line);
+
+		//pour l'année, on a pas besoin de renvoyer l'addresse de début car c'est la première info dans la ligne
 		getAnnee(line);
 		char* anneeStr = line;
+		// cast en entier
 		int annee = convertToIntFromCharTab(anneeStr);
-
-		//printf("%s\n", nom);
-		//printf("%s\n", nature);
-		//printf("%d\n\n", annee);
 
 		data[currentDataPrixTuring].annee = annee;
 		data[currentDataPrixTuring].nom = malloc(sizeof(char) * (tailleStr(nom)+1));
@@ -151,6 +164,7 @@ void readWinners(FILE* file, dataPrixTuring* data) {
 
 }
 
+// transforme le premier ';' en '\0'
 void getAnnee(char* line) {
 	char c = line[0];
 	int k = 0;
@@ -162,6 +176,7 @@ void getAnnee(char* line) {
 	line[k] = '\0';
 }
 
+// renvoie la taille d'une chaine de caractères
 int tailleStr(char* str) {
 	int taille = 0;
 	char c = str[taille];
@@ -171,6 +186,7 @@ int tailleStr(char* str) {
 	return taille;
 }
 
+// libère la mémoire allouée dans readWinners
 void freeData(dataPrixTuring* data, int size) {
 	for(int i = 0; i<size; i++) {
 		dataPrixTuring d = data[i];
@@ -179,6 +195,7 @@ void freeData(dataPrixTuring* data, int size) {
 	}
 }
 
+// ecris dans un fichier sortie
 void writeWinners(FILE* file, dataPrixTuring* data, int size) {
 	for(int i = 0; i < size; i++) {
 		char str[1024];
@@ -187,6 +204,7 @@ void writeWinners(FILE* file, dataPrixTuring* data, int size) {
 	}
 }
 
+// renvoie l'addresse dans le char* line du début du nom et remplace le deuxième ';' par '\0'
 char* getNom(char* line) {
 	char c = line[0];
 	int k = 0;
@@ -205,6 +223,7 @@ char* getNom(char* line) {
 	return t;
 }
 
+// renvoie l'addresse du début de la nature et remplace '\n' par '\0'
 char* getNature(char* line) {
 	char c = line[0];
 	int k = 0;
@@ -220,6 +239,7 @@ char* getNature(char* line) {
 	return t;
 }
 
+// affiche les données
 void printData(dataPrixTuring data[], int size) {
 	for(int i = 0; i < size; i++) {
 		dataPrixTuring d = data[i];
