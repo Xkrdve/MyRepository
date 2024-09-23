@@ -41,6 +41,9 @@ char* getNature(char* line);
 int tailleStr(char* str);
 void freeData(dataPrixTuring* data, int size);
 void writeWinners(FILE* file, dataPrixTuring* data, int size);
+void printInfo(dataPrixTuring* data, int size, int annee);
+int compareFunction (const void* ptr1, const void* ptr2);
+void sortTuringWinnersByYear(dataPrixTuring* dataIn, int size);
 
 
 /**
@@ -48,10 +51,33 @@ void writeWinners(FILE* file, dataPrixTuring* data, int size);
  * 
  * */
 
-int main(/*int argc, char** argv*/)
+int main(int argc, char** argv)
 {
-	char filename[] = "turingWinners.csv";
-	char outputFilename[] = "out.csv";
+	bool info = false;
+	bool sort = false;
+	int anneeInfo = 0;
+
+	char* filename = "turingWinners.csv\0";
+	char* outputFilename = "out.csv\0";
+
+	//gestion des arguments
+	for (int k = 1; k < argc; k++) {
+		if(!strcmp(argv[k], "-o") && k+1 < argc) {
+			k++;
+			outputFilename = argv[k];
+		}
+		else if(!strcmp(argv[k], "--info") && k+1 < argc) {
+			k++;
+			info = true;
+			anneeInfo = convertToIntFromCharTab(argv[k]);
+		}
+		else if(!strcmp(argv[k], "--sort")) {
+			sort = true;
+		}
+		else {
+			filename = argv[k];
+		}
+	}
 
 	// Lire le 1er csv
 	FILE* file;
@@ -69,11 +95,16 @@ int main(/*int argc, char** argv*/)
 	readWinners(file, data);
 
 
+	if(info) printInfo(data, nombreDeLignes, anneeInfo);
+
 	// on affiche dans la console
 	// printData(data, nombreDeLignes);
 
     fclose(file);
 
+    if(sort) {
+    	sortTuringWinnersByYear(data, nombreDeLignes);
+    }
 
     file = fopen(outputFilename, "w");
 	if (!checkFile(file)) 
@@ -204,6 +235,14 @@ void writeWinners(FILE* file, dataPrixTuring* data, int size) {
 	}
 }
 
+void sortTuringWinnersByYear(dataPrixTuring* dataIn, int size) {
+	qsort(dataIn, size, sizeof(dataPrixTuring), compareFunction);
+}
+
+int compareFunction (const void* ptr1, const void* ptr2) {
+	return ((dataPrixTuring*) ptr1)->annee - ((dataPrixTuring*) ptr2)->annee;
+}
+
 // renvoie l'addresse dans le char* line du début du nom et remplace le deuxième ';' par '\0'
 char* getNom(char* line) {
 	char c = line[0];
@@ -221,6 +260,16 @@ char* getNom(char* line) {
 	}
 	line[k] = '\0';
 	return t;
+}
+
+void printInfo(dataPrixTuring* data, int size, int annee) {
+	for(int i = 0; i < size; i++) {
+		dataPrixTuring d = data[i];
+		if(d.annee != annee) continue;
+		printf("année: %d\n", d.annee);
+		printf("nom: %s\n", d.nom);
+		printf("nature: %s\n\n", d.nature);
+	}
 }
 
 // renvoie l'addresse du début de la nature et remplace '\n' par '\0'
